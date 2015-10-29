@@ -24,6 +24,9 @@ class Room
 end
 
 class Game
+
+	attr_reader :player, :rooms, :current_room, :direction
+	
 	def initialize(player,rooms)
 		@player = player
 		@rooms = rooms
@@ -49,12 +52,13 @@ class Game
 	end
 
 	def puts_description
-	  puts "\n#{@rooms[@current_room].initial_description}"
+	  system "clear"
+	  puts "#{@rooms[@current_room].initial_description}"
 	end
 
 	def check_objects
 		if @rooms[@current_room].object != nil
-			puts "You can take a #{@rooms[@current_room].object}"
+			puts "\nYou can take a #{@rooms[@current_room].object}"
 			take_objects
 		end
 	end
@@ -106,6 +110,16 @@ class Game
 
 end
 
+class SavedGame < Game
+
+	def initialize(player, rooms, current_room, direction)
+		super(player, rooms)
+		@current_room = current_room
+		@direction = direction
+	end
+
+end
+
 room_0 = Room.new(0, [1, nil, nil, nil], "You are in the room 0")
 room_1 = Room.new(1, [nil, 2, 0, nil], "You are in the room 1")
 room_2 = Room.new(2, [3, nil, nil, 1], "You are in the room 2", "sword")
@@ -117,3 +131,7 @@ player_1 = Player.new("Lara")
 my_game = Game.new(player_1, [room_0, room_1, room_2, room_3, room_4])
 
 my_game.play
+
+my_saved_game = SavedGame.new(my_game.player, my_game.rooms, my_game.current_room, my_game.direction)
+
+my_saved_game.play
