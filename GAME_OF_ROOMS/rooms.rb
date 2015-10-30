@@ -1,4 +1,4 @@
-require 'pry'
+
 
 class Player
 	
@@ -25,7 +25,7 @@ end
 
 class Game
 
-	attr_reader :player, :rooms, :current_room, :direction
+	attr_reader :rooms, :current_room, :direction
 	
 	def initialize(player,rooms)
 		@player = player
@@ -58,13 +58,13 @@ class Game
 
 	def check_objects
 		if @rooms[@current_room].object != nil
-			puts "\nYou can take a #{@rooms[@current_room].object}"
+			puts "\nYou find a #{@rooms[@current_room].object}"
 			take_objects
 		end
 	end
 
 	def take_objects
-	  puts "Do you take it? Y/N"
+	  puts "Do you take it with you? Y/N"
 	  user_input = gets.chomp.upcase
 	  if user_input == "Y"
 	  	@player.objects << @rooms[@current_room].object
@@ -110,7 +110,7 @@ class Game
 
 end
 
-class SavedGame < Game
+class GameSaver 
 
 	def initialize(player, rooms, current_room, direction)
 		super(player, rooms)
@@ -120,15 +120,22 @@ class SavedGame < Game
 
 end
 
-room_0 = Room.new(0, [1, nil, nil, nil], "You are in the room 0")
+room_0 = Room.new(0, [1, nil, 5, nil], "You are in the room 0")
 room_1 = Room.new(1, [nil, 2, 0, nil], "You are in the room 1")
 room_2 = Room.new(2, [3, nil, nil, 1], "You are in the room 2", "sword")
-room_3 = Room.new(3, [nil, 4, 2, nil], "You are in the room 3", "gun")
+room_3 = Room.new(3, [nil, 4, 2, nil], "You are in the room 3")
 room_4 = Room.new(4, [nil, false, nil, 3], "You are in the room 4")
+room_5 = Room.new(5, [0, 6, nil, nil], "You are in the room 5")
+room_6 = Room.new(6, [nil, 7, nil, 5], "You are in the room 6", "gun")
+room_7 = Room.new(7, [8, nil, nil, 6], "You are in the room 7", "programmer")
+room_8 = Room.new(8, [9, nil, 7, nil], "You are in the room 8")
+room_9 = Room.new(9, [4, nil, nil, 2], "You are in the room 9")
 
 player_1 = Player.new("Lara")
 
-my_game = Game.new(player_1, [room_0, room_1, room_2, room_3, room_4])
+my_rooms = [room_0, room_1, room_2, room_3, room_4, room_5, room_6, room_7, room_8, room_9]
+
+my_game = Game.new(player_1, my_rooms)
 
 my_game.play
 
