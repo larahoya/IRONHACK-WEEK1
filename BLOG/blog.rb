@@ -2,76 +2,75 @@ require 'colorize'
 
 class Blog
 
-	def initialize
-		@posts = []
-		@pages = []
-		@current_page = 0
-	end
+  def initialize
+    @posts = []
+    @pages = []
+    @current_page = 0
+  end
 
-	def add_post(post)
-		@posts << post
-	end
+  def add_post(post)
+    @posts << post
+  end
 
-	def sort_by_date
-		@posts = @posts.sort do |post1, post2|
-			post1.date <=> post2.date
-		end
-	end
+  def sort_by_date
+    @posts = @posts.sort do |post1, post2|
+      post1.date <=> post2.date
+    end
+  end
 
-	def create_pages
-		for n in 0..@posts.length/3
-			@pages[n] = ""
-		end
-		post_number = 0
-		while post_number < @posts.length
-			page_number = post_number/3
-			if @posts[post_number].sponsored
-				@pages[page_number] += "***** #{@posts[post_number].title} ***** \n********** \n#{@posts[post_number].text } \n----------\n"
-			else
-				@pages[page_number] += "#{@posts[post_number].title} \n********** \n#{@posts[post_number].text } \n----------\n"
-			end
-			post_number += 1
-		end	
-	end
+  def create_pages
+    for n in 0..@posts.length/3
+      @pages[n] = ""
+    end
+    post_number = 0
+    while post_number < @posts.length
+      page_number = post_number/3
+      if @posts[post_number].sponsored
+        @pages[page_number] += "***** #{@posts[post_number].title} ***** \n********** \n#{@posts[post_number].text } \n----------\n"
+      else
+        @pages[page_number] += "#{@posts[post_number].title} \n********** \n#{@posts[post_number].text } \n----------\n"
+      end
+      post_number += 1
+    end	
+  end
 
-	def menu 
-		user_input = gets.chomp.downcase
-		if user_input == "p"
-			@current_page -= 1 if @current_page > 0 
-			publish_page
-		elsif user_input == "n"
-			@current_page += 1 if @current_page < (@pages.length - 1)
-			publish_page
-		end
+  def menu 
+    user_input = gets.chomp.downcase
+    if user_input == "p"
+      @current_page -= 1 if @current_page > 0 
+      publish_page
+    elsif user_input == "n"
+      @current_page += 1 if @current_page < (@pages.length - 1)
+      publish_page
+    end
+  end
 
-	end
-
-	def publish_page
-		system "clear"
-		puts @pages[@current_page]
-		for n in 1..@pages.length
-			if (@current_page + 1)== n
-				print "#{n}   ".colorize(:red)
-			else
-				print "#{n}   "
-			end
-		end
-		puts "> next" if @current_page < @pages.length - 1
-		menu
-	end
+  def publish_page
+    system "clear"
+    puts @pages[@current_page]
+    for n in 1..@pages.length
+      if (@current_page + 1)== n
+        print "#{n}   ".colorize(:red)
+      else
+        print "#{n}   "
+      end
+    end
+    puts "> next" if @current_page < @pages.length - 1
+    menu
+  end
 
 end
 
 class Post
 
-	attr_reader :title, :text, :date, :sponsored
+  attr_reader :title, :text, :date, :sponsored
 
-	def initialize(title, text, sponsored=false)
-		@title = title
-		@text = text
-		@date = Time.now
-		@sponsored = sponsored
-	end
+  def initialize(title, text, sponsored=false)
+    @title = title
+    @text = text
+    @date = Time.now
+    @sponsored = sponsored
+  end
 
 end
 

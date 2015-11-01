@@ -1,122 +1,126 @@
-
-
 class Player
 	
-	attr_reader :name, :objects
+attr_reader :name, :objects
 
-	def initialize(name)
-		@name = name
-		@objects = []
-	end
+  def initialize(name)
+    @name = name
+    @objects = []
+  end
+
+  def take_object(object)
+    @objects.push(object)
+    puts "You have taken a #{object}"
+  end
 
 end
 
 class Room
 
-	attr_reader :number, :other_rooms, :initial_description, :object
+  attr_reader :number, :other_rooms, :description
+  attr_accessor :object
 
-	def initialize(number,other_rooms, initial_description, object = nil)
-		@number = number
-		@other_rooms = other_rooms
-		@initial_description = initial_description
-		@object = object
-	end
+  def initialize(number,other_rooms, description, object = nil)
+    @number = number
+    @other_rooms = other_rooms
+    @description = description
+    @object = object
+  end
+
 end
 
 class Game
 
-	attr_reader :rooms, :current_room, :direction
+  attr_reader :player, :rooms, :current_room, :direction
 	
-	def initialize(player,rooms)
-		@player = player
-		@rooms = rooms
-		@current_room = @rooms[0].number
-		@direction = nil
-	end
+  def initialize(player,rooms)
+    @player = player
+    @rooms = rooms
+    @current_room = @rooms[0]
+    @direction = nil
+  end
 
-	def play
-	  puts_description
-	  check_objects
-	  puts_direction
-	  get_user_input
-      change_room
-	end
+  def play
+    puts_description
+    take_objects if objects?
+    puts_direction
+    select_direction
+    change_room
+  end
 
-	def puts_direction
-		directions = "\nExists: "
-		directions << "N " if @rooms[@current_room].other_rooms[0] != nil
-		directions << "E " if @rooms[@current_room].other_rooms[1] != nil
-		directions << "S " if @rooms[@current_room].other_rooms[2] != nil
-		directions << "W " if @rooms[@current_room].other_rooms[3] != nil
-		puts directions
-	end
+  def puts_direction
+    directions = "\nExists: "
+    directions << "N " if @current_room.other_rooms[0] != nil
+    directions << "E " if @current_room.other_rooms[1] != nil
+    directions << "S " if @current_room.other_rooms[2] != nil
+    directions << "W " if @current_room.other_rooms[3] != nil
+    puts directions
+  end
 
-	def puts_description
-	  system "clear"
-	  puts "#{@rooms[@current_room].initial_description}"
-	end
+  def puts_description
+    system "clear"
+    puts "#{@current_room.description}"
+  end
 
-	def check_objects
-		if @rooms[@current_room].object != nil
-			puts "\nYou find a #{@rooms[@current_room].object}"
-			take_objects
-		end
-	end
+  def objects?
+    @current_room.object != nil
+  end
 
-	def take_objects
-	  puts "Do you take it with you? Y/N"
-	  user_input = gets.chomp.upcase
-	  if user_input == "Y"
-	  	@player.objects << @rooms[@current_room].object
-	  	puts "You have take a #{@rooms[@current_room].object}"
-	  else
-	  	puts "You have decided not to take it!"
-	  end		
-	end
+  def get_user_input
+    user_input = gets.chomp.upcase
+  end
 
-	def get_user_input
-	  puts "Select your next move"
-	  user_input = gets.chomp.upcase
-  	  case user_input
-		when 'N'
-			@direction = 0
-		when 'E'
-			@direction = 1
-		when 'S'
-			@direction = 2
-		when 'W'
-			@direction = 3
-		when 'EXIT'
-			@direction = nil
-		else
-			puts "Incorrect move!"
-	  end
-	end 
+  def take_objects
+    puts "You have find a #{@current_room.object}.\nDo you take it with you? Y/N"
+    if get_user_input == "Y"
+      @player.take_object(@current_room.object)
+      @current_room.object = nil
+    else
+      puts "You have decided not to take it!"
+    end		
+  end
 
-	def change_room
-	  if @direction == nil
-	  	puts "GOOD BYE!"
-	  elsif @rooms[@current_room].other_rooms[@direction] == nil
-	    puts "You can't do this move!"
-		play
-	  elsif
-		@rooms[@current_room].other_rooms[@direction] == false
-		puts "YOU WIN!"
-	  else
-		@current_room = @rooms[@current_room].other_rooms[@direction]
-		play
-	  end
-	end
+  def select_direction
+    puts "Select your next move"
+    case get_user_input
+    when 'N'
+      @direction = 0
+    when 'E'
+      @direction = 1
+    when 'S'
+      @direction = 2
+    when 'W'
+      @direction = 3
+    when 'EXIT'
+      @direction = nil
+    else
+    puts "Incorrect move!"
+    end
+  end 
+
+  def change_room
+    if @direction == nil
+      puts "GOOD BYE!"
+    elsif @current_room.other_rooms[@direction] == nil
+      puts "You can't do this move!"
+      play
+    elsif
+      @current_room.other_rooms[@direction] == false
+      puts "YOU WIN!"
+    else
+      @current_room = @rooms[@current_room.other_rooms[@direction]]
+      play
+    end
+  end
 
 end
 
-class GameSaver 
+class GameSaver < Game
 
-	def initialize(player, rooms, current_room, direction)
-		super(player, rooms)
-		@current_room = current_room
-		@direction = direction
-	end
+  def initialize(player, rooms, current_room, direction)
+    super(player, rooms)
+    @current_room = current_room
+    @direction = direction
+  end
 
 end
 
@@ -139,6 +143,6 @@ my_game = Game.new(player_1, my_rooms)
 
 my_game.play
 
-my_saved_game = SavedGame.new(my_game.player, my_game.rooms, my_game.current_room, my_game.direction)
+my_saved_game = GameSaver.new(my_game.player, my_game.rooms, my_game.current_room, my_game.direction)
 
 my_saved_game.play
