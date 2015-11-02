@@ -9,7 +9,6 @@ class TweetList
 		@tweets = []
 		@persons = []
 		@mentions = {}
-		@first_conections = {}
 	end
 
 	def read_file
@@ -28,7 +27,6 @@ class TweetList
   def set_mentions
   	@persons.each do |person|
   		@mentions[person] = ""
-  		@first_conections[person] = []
   	end
   end
 
@@ -42,19 +40,55 @@ class TweetList
   	end  
   end
 
-  def get_connections
-    @persons.each do |person1|
-    	@persons.each do |person2|
-    	  if (@mentions[person1].include? person2) && (@mentions[person2].include? person1)
-    		  @first_conections[person1].push(person2)
-    	    @first_conections[person2].push(person1)
-    	  end
-    	end
-    end
-    @first_conections = @first_conections.each do |key,value|
-    	@first_conections[key] = value.uniq
+end
+
+class ConnectionList
+
+  attr_reader :first, :second
+
+  def initialize(persons, mentions)
+    @persons = persons
+    @mentions = mentions
+    @first = {}
+    @second = {}
+  end
+
+  def set_hashes
+    @persons.each do |person|
+      @first[person] = []
+      @second[person] = []
     end
   end
+
+  def get_first
+    @persons.each do |person1|
+      @persons.each do |person2|
+        if (@mentions[person1].include? person2) && (@mentions[person2].include? person1)
+          @first[person1].push(person2)
+          @first[person2].push(person1)
+        end
+      end
+    end
+    @first = @first.each do |key,value|
+      @first[key] = value.uniq
+    end
+  end
+
+  def get_second
+    @persons.each do |person1|
+      @persons.each do |person2|
+        @persons.each do |person3|
+          if (@first[person1].include? person3) && (@first[person2].include? person3)
+            @second[person1].push(person3)
+            @second[person2].push(person3)
+          end
+        end
+      end
+    end
+    @second = @second.each do |key,value|
+      @second[key] = value.uniq
+    end
+  end 
 
 end
 
@@ -72,4 +106,10 @@ list.read_file
 list.get_persons
 list.set_mentions
 list.get_mentions
-list.get_connections
+
+connectionlist = ConnectionList.new(list.persons, list.mentions)
+connectionlist.set_hashes
+connectionlist.get_first
+connectionlist.get_second
+
+binding.pry
