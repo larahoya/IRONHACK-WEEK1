@@ -2,13 +2,17 @@ require 'pry'
 
 class TweetList
 
-	attr_reader :persons, :mentions, :tweets, :first_conections
+	attr_reader :persons, :mentions, :tweets, :first, :second, :third, :connections
 
 	def initialize(file)
 		@file = file
 		@tweets = []
 		@persons = []
 		@mentions = {}
+    @first = {}
+    @second = {}
+    @third = {}
+    @connections = []
 	end
 
 	def read_file
@@ -24,39 +28,31 @@ class TweetList
 		@persons = @persons.uniq
   end
 
-  def set_mentions
-  	@persons.each do |person|
-  		@mentions[person] = ""
-  	end
-  end
-
   def get_mentions
   	@tweets.each do |tweet|
   		@persons.each do |person|
   			if tweet[1].include? person
-  				@mentions[tweet[0]] += " #{person}"
+  				@mentions[tweet[0]] ? @mentions[tweet[0]] << "#{person}" : @mentions[tweet[0]] = ["#{person}"]
   			end
   		end
   	end  
   end
 
-end
-
-class ConnectionList
-
-  attr_reader :first, :second
-
-  def initialize(persons, mentions)
-    @persons = persons
-    @mentions = mentions
-    @first = {}
-    @second = {}
+  def hash_uniq_value(hash)
+    hash.each do |key, value|
+      hash[key] = value.uniq
+    end
   end
 
-  def set_hashes
-    @persons.each do |person|
-      @first[person] = []
-      @second[person] = []
+  def search(hash1, hash2)
+    @persons.each do |person1|
+      hash1[person1].each do |person2|
+        hash1[person2].each do |person|
+          if (person != person1) && (hash1[person1].include?(person) == false)
+            hash2[person1] ? hash2[person1] << "#{person}" : hash2[person1] = ["#{person}"]
+          end
+        end
+      end
     end
   end
 
@@ -64,52 +60,46 @@ class ConnectionList
     @persons.each do |person1|
       @persons.each do |person2|
         if (@mentions[person1].include? person2) && (@mentions[person2].include? person1)
-          @first[person1].push(person2)
-          @first[person2].push(person1)
+          @first[person1] ? @first[person1] << "#{person2}" : @first[person1] = ["#{person2}"]
+          @first[person2] ? @first[person2] << "#{person1}" : @first[person2] = ["#{person1}"]
         end
       end
     end
-    @first = @first.each do |key,value|
-      @first[key] = value.uniq
-    end
+    @first = hash_uniq_value(@first)
   end
 
   def get_second
-    @persons.each do |person1|
-      @persons.each do |person2|
-        @persons.each do |person3|
-          if (@first[person1].include? person3) && (@first[person2].include? person3)
-            @second[person1].push(person3)
-            @second[person2].push(person3)
-          end
-        end
-      end
+    search(@first, @second)
+    @second = hash_uniq_value(@second)
+  end
+
+  def get_third
+    search(@second, @third)
+    @third = hash_uniq_value(@third)
+    @third.each do |key, value|
+      @third[key].delete_if {|name| @first[key].include?(name)}
     end
-    @second = @second.each do |key,value|
-      @second[key] = value.uniq
+  end
+
+  def get_connections
+    @persons.each do |person|
+      hash = {name: person, first: @first[person], second: @second[person], third: @third[person]}
+      @connections.push(hash)
     end
-  end 
+  end
+
 
 end
 
-class Person
-
-	def initialize(name)
-		@name = name
-		@connections = {}
-	end
-
-end
 
 list = TweetList.new("degrees.txt")
 list.read_file
 list.get_persons
-list.set_mentions
 list.get_mentions
+list.get_first
+list.get_second
+list.get_third
+list.get_connections
 
-connectionlist = ConnectionList.new(list.persons, list.mentions)
-connectionlist.set_hashes
-connectionlist.get_first
-connectionlist.get_second
 
 binding.pry
